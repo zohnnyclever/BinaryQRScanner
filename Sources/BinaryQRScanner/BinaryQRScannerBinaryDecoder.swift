@@ -5,7 +5,7 @@ extension BinaryQRScanner {
         public init() {
             // expose
         }
-        
+
         public func decodeQRErrorCorrectedBytes(_ errorCorrectedPayload: Data, symbolVersion: Int) -> Data? {
             let binData = Binary(data: errorCorrectedPayload)
             guard let decodedData = decode(binData, symbolVersion: symbolVersion) else {
