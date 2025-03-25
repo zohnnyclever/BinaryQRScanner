@@ -84,7 +84,9 @@ extension BinaryQRScanner.View {
         }
 
         private func setupCaptureDevice() {
-            guard let captureDevice = AVCaptureDevice.default(for: .video) else {
+            guard let captureDevice = AVCaptureDevice.default(.builtInWideAngleCamera,
+                                                              for: .video,
+                                                              position: parentView.isFrontCamera ? .front : .back) else {
                 print("Error: Unable to find the camera of the device")
                 return
             }

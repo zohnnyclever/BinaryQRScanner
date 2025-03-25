@@ -42,17 +42,20 @@ public enum BinaryQRScanner {
         public var completion: ScanCompletionHandler
         public var dismiss: () -> Void
         public var subview: SubviewWithPosition?
+        public var isFrontCamera: Bool
 
         public init(
             mode: EncodingMode,
             completion: @escaping ScanCompletionHandler,
             dismiss: @escaping () -> Void,
-            subview: SubviewWithPosition?
+            subview: SubviewWithPosition?,
+            isFrontCamera: Bool = false
         ) {
             self.mode = mode
             self.completion = completion
             self.dismiss = dismiss
             self.subview = subview
+            self.isFrontCamera = isFrontCamera
         }
 
         public func makeUIViewController(context: Context) -> Controller {
