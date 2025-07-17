@@ -34,7 +34,21 @@ extension BinaryQRScanner.View {
         }
 
         override public func viewWillDisappear(_ animated: Bool) {
+            super.viewWillDisappear(animated)
             finishScanning()
+        }
+
+        override public func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
+            super.viewWillTransition(to: size, with: coordinator)
+            
+            coordinator.animate(alongsideTransition: { _ in
+                self.updatePreviewLayerLayout()
+            }, completion: nil)
+        }
+
+        override public func viewDidLayoutSubviews() {
+            super.viewDidLayoutSubviews()
+            updatePreviewLayerLayout()
         }
 
         //MARK: - Private methods
@@ -73,14 +87,70 @@ extension BinaryQRScanner.View {
 
         private func setupSession() {
             previewLayer = AVCaptureVideoPreviewLayer(session: session)
-            previewLayer.frame = UIScreen.main.bounds
             previewLayer.videoGravity = .resizeAspectFill
             view.layer.addSublayer(previewLayer)
+            
+            updatePreviewLayerLayout()
             setupSubview()
 
             DispatchQueue.global(qos: .userInteractive).async {
                 self.session.startRunning()
             }
+        }
+
+        private func updatePreviewLayerLayout() {
+            guard previewLayer.superlayer != nil else { return }
+            
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                
+                // Update frame to match current view bounds
+                self.previewLayer.frame = self.view.bounds
+                
+                // Update video orientation to match current interface orientation
+                self.updateVideoOrientation()
+            }
+        }
+
+        private func updateVideoOrientation() {
+            guard let connection = previewLayer.connection,
+                  connection.isVideoOrientationSupported else { return }
+            
+            let videoOrientation: AVCaptureVideoOrientation
+            
+            // Get current interface orientation
+            if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene {
+                switch windowScene.interfaceOrientation {
+                case .portrait:
+                    videoOrientation = .portrait
+                case .portraitUpsideDown:
+                    videoOrientation = .portraitUpsideDown
+                case .landscapeLeft:
+                    videoOrientation = .landscapeLeft
+                case .landscapeRight:
+                    videoOrientation = .landscapeRight
+                case .unknown:
+                    videoOrientation = .portrait
+                @unknown default:
+                    videoOrientation = .portrait
+                }
+            } else {
+                // Fallback to device orientation if interface orientation is unavailable
+                switch UIDevice.current.orientation {
+                case .portrait:
+                    videoOrientation = .portrait
+                case .portraitUpsideDown:
+                    videoOrientation = .portraitUpsideDown
+                case .landscapeLeft:
+                    videoOrientation = .landscapeRight
+                case .landscapeRight:
+                    videoOrientation = .landscapeLeft
+                default:
+                    videoOrientation = .portrait
+                }
+            }
+            
+            connection.videoOrientation = videoOrientation
         }
 
         private func setupCaptureDevice() {
