@@ -142,9 +142,9 @@ extension BinaryQRScanner.View {
                 case .portraitUpsideDown:
                     videoOrientation = .portraitUpsideDown
                 case .landscapeLeft:
-                    videoOrientation = .landscapeRight
-                case .landscapeRight:
                     videoOrientation = .landscapeLeft
+                case .landscapeRight:
+                    videoOrientation = .landscapeRight
                 default:
                     videoOrientation = .portrait
                 }
